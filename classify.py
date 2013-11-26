@@ -260,3 +260,25 @@ def anova_sort(X, y):
         C = multianova(X, y)
         ac = np.argsort(C.T[1])
         return X.T[ac].T, C[ac]
+
+
+def ttest_sort(X, y):
+    """
+    Parameters
+    ----------
+    X: np.array([n_samples, n_features])
+    y: np.array([n_samples])
+
+    Returns
+    _______
+    X_sorted, [[t_value,p-value]]
+
+    """
+    labels = list(set(y))
+    if len(labels) != 2:
+        print "number of labels has to be equal 2"
+        return None
+    else:
+        t, p = ttest_ind(X[y == labels[0]], X[y == labels[1]])
+        ac = np.argsort(t)
+        return X.T[ac].T, np.column_stack((t[ac], p[ac]))
