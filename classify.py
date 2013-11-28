@@ -1,7 +1,6 @@
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
-#from sklearn.metrics import matthews_corrcoef
 from sklearn.cross_validation import LeaveOneOut
 from multiprocessing import Queue, Process
 from Queue import Empty
@@ -22,12 +21,22 @@ def set_classifiers(list_knn=[3, 5, 7], list_svm=[1]):
     values = classifers function
 
     """
-    classifiers = dict()
-    for neigh in list_knn:
-        classifiers["KNN" + str(neigh)] = KNeighborsClassifier(neigh)
-    for C in list_svm:
-        classifiers["SVM_C" + str(C)] = SVC(kernel="linear", C=C)
-    return classifiers
+    if type(list_knn) is not dict:
+        classifiers = dict()
+        for neigh in list_knn:
+            classifiers["KNN" + str(neigh)] = KNeighborsClassifier(neigh)
+        for C in list_svm:
+            classifiers["SVM_C" + str(C)] = SVC(kernel="linear", C=C)
+        return classifiers
+    else:
+        classifiers = dict()
+        for neigh in list_knn:
+            classifiers["KNN" + str(neigh)] = (KNeighborsClassifier(neigh),
+                                               list_knn[neigh])
+        for C in list_svm:
+            classifiers["SVM_C" + str(C)] = (SVC(kernel="linear", C=C),
+                                             list_svm[C])
+        return classifiers
 
 
 def loo_predict(X, y, classifiers, loo=None):
@@ -135,11 +144,21 @@ def predict(X_train, y_train, X_valid, y_valid, classifiers):
 
     """
     result = dict()
-    for clf in classifiers:
-        classifiers[clf].fit(X_train, y_train)
-        y_predict = classifiers[clf].predict(X_valid)
-        result[clf] = MCC(y_valid, y_predict)
-    return result
+    if type(classifiers.values()[0]) is not tuple:
+        print type(classifiers.values()[0])
+        for clf in classifiers:
+            classifiers[clf].fit(X_train, y_train)
+            y_predict = classifiers[clf].predict(X_valid)
+            result[clf] = MCC(y_valid, y_predict)
+        return result
+    else:
+        for clf in classifiers:
+            clff = classifiers[clf][0]
+            dim = classifiers[clf][1]
+            clff.fit(X_train.T[:dim].T, y_train)
+            y_predict = clff.predict(X_valid.T[:dim].T)
+            result[(clf, dim)] = MCC(y_valid, y_predict)
+        return result
 
 
 def MCC(y_true, y_predict):
