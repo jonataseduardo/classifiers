@@ -12,13 +12,16 @@ def set_classifiers(list_knn=[3, 5, 7], list_svm=[1]):
     Parameters
     __________
     list_knn: list of number of neigbours
+             or dict {number of neigbours:n_features}
     list_svm: list of C parameters
+             or dict {C parameters :n_features}
 
     Returns
     _______
     classifiers: diciontary of classifiers with
     keys = classifiers name
     values = classifers function
+             or (classifiers fuction, n_features)
 
     """
     if type(list_knn) is not dict:
@@ -47,7 +50,7 @@ def loo_predict(X, y, classifiers, loo=None):
     y: array of shap [n_features]
     classifiers: diciontary of classifiers with
     keys = classifiers name
-    values = classifers function
+    values = list of classifer paramters
 
     Return
     ______
@@ -139,7 +142,8 @@ def predict(X_train, y_train, X_valid, y_valid, classifiers):
     ______
 
     result = dictionary with
-    key = calssifires name
+    key = classifiers name
+          or (classifiers name, n_features)
     values = classificaire matthews correlation coeficient score
 
     """
