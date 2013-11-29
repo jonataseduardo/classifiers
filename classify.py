@@ -137,19 +137,19 @@ def predict(X_train, y_train, X_valid, y_valid, classifiers):
     classifiers: diciontary of classifiers with
     keys = classifiers name
     values = classifers function
+             classifiers function,
 
     Return
     ______
 
     result = dictionary with
     key = classifiers name
-          or (classifiers name, n_features)
+          or tuple (classifiers name, n_features)
     values = classificaire matthews correlation coeficient score
 
     """
     result = dict()
     if type(classifiers.values()[0]) is not tuple:
-        print type(classifiers.values()[0])
         for clf in classifiers:
             classifiers[clf].fit(X_train, y_train)
             y_predict = classifiers[clf].predict(X_valid)
@@ -161,7 +161,7 @@ def predict(X_train, y_train, X_valid, y_valid, classifiers):
             dim = classifiers[clf][1]
             clff.fit(X_train.T[:dim].T, y_train)
             y_predict = clff.predict(X_valid.T[:dim].T)
-            result[(clf, dim)] = MCC(y_valid, y_predict)
+            result[clf] = (MCC(y_valid, y_predict), dim)
         return result
 
 
@@ -282,7 +282,7 @@ def anova_sort(X, y):
 
         C = multianova(X, y)
         ac = np.argsort(C.T[1])
-        return X.T[ac].T, C[ac]
+        return X.T[ac].T, C[ac], ac
 
 
 def ttest_sort(X, y):
@@ -304,4 +304,4 @@ def ttest_sort(X, y):
     else:
         t, p = ttest_ind(X[y == labels[0]], X[y == labels[1]])
         ac = np.argsort(t)
-        return X.T[ac].T, np.column_stack((t[ac], p[ac]))
+        return X.T[ac].T, np.column_stack((t[ac], p[ac])), ac
