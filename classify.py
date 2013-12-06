@@ -159,8 +159,8 @@ def predict(X_train, y_train, X_valid, y_valid, classifiers):
         for clf in classifiers:
             clff = classifiers[clf][0]
             dim = classifiers[clf][1]
-            clff.fit(X_train.T[:dim].T, y_train)
-            y_predict = clff.predict(X_valid.T[:dim].T)
+            clff.fit(X_train[:, :dim], y_train)
+            y_predict = clff.predict(X_valid[:, :dim])
             result[clf] = (MCC(y_valid, y_predict), dim)
         return result
 
@@ -282,7 +282,7 @@ def anova_sort(X, y):
 
         C = multianova(X, y)
         ac = np.argsort(C.T[1])
-        return X.T[ac].T, C[ac], ac
+        return X[:, :ac], C[ac], ac
 
 
 def ttest_sort(X, y):
@@ -304,4 +304,4 @@ def ttest_sort(X, y):
     else:
         t, p = ttest_ind(X[y == labels[0]], X[y == labels[1]])
         ac = np.argsort(t)
-        return X.T[ac].T, np.column_stack((t[ac], p[ac])), ac
+        return X[:, :ac], np.column_stack((t[ac], p[ac])), ac
